@@ -50,6 +50,8 @@
                 pyyaml
               ]
             ))
+            just
+            fzf
             git
           ];
 

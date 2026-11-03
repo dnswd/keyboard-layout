@@ -5,7 +5,7 @@ enum layers { _BASE = 0, _NAV = 1, _SYM = 2, _FN = 3, _GAME = 4, _GNUM = 5, _GCH
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT_split_3x6_3(
     KC_TAB,        KC_Q,          KC_W,          KC_E,          KC_R,          KC_T,          KC_Y,          KC_U,          KC_I,          KC_O,          KC_P,          KC_BSPC,
-    KC_LCTL,       KC_A,          KC_S,          KC_D,          KC_F,          KC_G,          KC_H,          KC_J,          KC_K,          KC_L,          KC_QUOT,       KC_BTN2,
+    KC_LCTL,       KC_A,          KC_S,          KC_D,          KC_F,          KC_G,          KC_H,          KC_J,          KC_K,          KC_L,          KC_QUOT,       MS_BTN2,
     KC_LSFT,       KC_Z,          KC_X,          KC_C,          KC_V,          KC_B,          KC_N,          KC_M,          KC_COMM,       KC_DOT,        KC_SLSH,       KC_RSFT,
                                                  KC_LGUI,       MO(_SYM),      KC_SPC,        KC_ENT,        MO(_NAV),      KC_LALT
   ),
@@ -14,7 +14,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______,       OSM(MOD_LGUI), OSM(MOD_LALT), OSM(MOD_LSFT), OSM(MOD_LCTL), _______,       KC_LEFT,       KC_DOWN,       KC_UP,         KC_RGHT,       _______,       KC_VOLU,
     _______,       _______,       _______,       _______,       _______,       _______,       KC_END,        KC_PGDN,       KC_PGUP,       KC_HOME,       _______,       KC_VOLD,
                                                  _______,       _______,       _______,       _______,      _______,      _______
-  ),                                                                      OSM(MOD_LCTL)
+  ),
   [_SYM] = LAYOUT_split_3x6_3(
     _______,       _______,       S(KC_6),       S(KC_8),       S(KC_7),       S(KC_MINS),    KC_PAST,       KC_P7,         KC_P8,         KC_P9,         KC_PPLS,       _______,
     _______,       _______,       S(KC_3),       S(KC_5),       S(KC_4),       KC_PEQL,       KC_PSLS,       KC_P4,         KC_P5,         KC_P6,         KC_PMNS,       _______,
@@ -34,11 +34,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_GAME] = LAYOUT_split_3x6_3(
     // NOTE: KC_P also at left-outer bottom
-    // TODO: ENTER for submitting comms
     KC_ESC,        KC_T,          KC_Q,          KC_W,          KC_E,          KC_R,          KC_Y,          KC_U,          KC_I,          KC_O,          KC_P,          TG(_GAME),
     KC_TAB,        KC_LSFT,       KC_A,          KC_S,          KC_D,          KC_F,          KC_H,          KC_J,          KC_K,          KC_L,          S(KC_1),       KC_NO,
     KC_P,          KC_LCTL,       KC_Z,          KC_X,          KC_C,          KC_V,          KC_N,          KC_M,          KC_PCMM,       KC_PDOT,       S(KC_SLSH),    KC_RSFT,
-                                                 KC_WH_U,       MO(_GNUM),     KC_SPC,        KC_SPC,        MO(_GCHAT),    KC_WH_D
+                                                 MS_WHLU,       MO(_GNUM),     KC_SPC,        KC_ENT,        MO(_GCHAT),    MS_WHLD
   ),
   [_GNUM] = LAYOUT_split_3x6_3(
     _______,       KC_P6,         KC_P7,         _______,       KC_P8,         KC_P9,         _______,       _______,       _______,       _______,       _______,       _______,
@@ -46,7 +45,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______,       KC_P1,         KC_P2,         KC_P3,         KC_P4,         KC_P5,         _______,       _______,       _______,       _______,       _______,       _______,
                                                  _______,       _______,       _______,       _______,       _______,       _______
   ),
-  // TODO: Should this be normal qwerty layer? Seems awkward
   [_GCHAT] = LAYOUT_split_3x6_3(
     _______,       KC_Q,          KC_W,          KC_E,          KC_R,          KC_T,          _______,       _______,       _______,       _______,       _______,       _______,
     _______,       KC_A,          KC_S,          KC_D,          KC_F,          KC_G,          _______,       _______,       _______,       _______,       _______,       _______,
@@ -63,3 +61,20 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     return get_highest_layer(layer_state | default_layer_state) == _BASE;
 }
+
+// Generate QMK combos from combos.def
+#define COMB(name, key, ...) name,
+enum combos {
+#include "combos.def"
+};
+#undef COMB
+
+#define COMB(name, key, ...) const uint16_t PROGMEM cmb_##name[] = {__VA_ARGS__, COMBO_END};
+#include "combos.def"
+#undef COMB
+
+#define COMB(name, key, ...) COMBO(cmb_##name, key),
+combo_t key_combos[] = {
+#include "combos.def"
+};
+#undef COMB
