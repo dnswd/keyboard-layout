@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "os_detection.h"
 
 enum layers { _BASE = 0, _NAV = 1, _SYM = 2, _FN = 3, _GAME = 4, _GNUM = 5, _GCHAT = 6 };
 
@@ -78,3 +79,16 @@ combo_t key_combos[] = {
 #include "combos.def"
 };
 #undef COMB
+
+void matrix_scan_user(void) {
+    static os_variant_t last_os = OS_UNSURE;
+    os_variant_t current_os = detected_host_os();
+    if (current_os != last_os) {
+        last_os = current_os;
+        if (current_os == OS_MACOS) {
+            keymap_config.swap_lctl_lgui = false;
+        } else { // linux + windows
+            keymap_config.swap_lctl_lgui = true;
+        }
+    }
+}
