@@ -1,3 +1,5 @@
+keymap_name := "dnswd_custom_keymap"
+
 set shell := ["bash", "-c"]
 
 # Default action is to list all available keyboard layouts
@@ -25,8 +27,8 @@ compile keyboard="all":
             echo "Compiling $kb..."
             echo "=========================================================="
             mkdir -p "$qmk_home/keyboards/$kb/keymaps"
-            ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/vial"
-            qmk compile -kb "$kb" -km vial
+            ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/{{keymap_name}}"
+            qmk compile -kb "$kb" -km {{keymap_name}}
         done
     else
         kb="{{keyboard}}"
@@ -38,8 +40,8 @@ compile keyboard="all":
         echo "Compiling $kb..."
         echo "=========================================================="
         mkdir -p "$qmk_home/keyboards/$kb/keymaps"
-        ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/vial"
-        qmk compile -kb "$kb" -km vial
+        ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/{{keymap_name}}"
+        qmk compile -kb "$kb" -km {{keymap_name}}
     fi
 
 # Compile and Flash one or all keyboard layouts. Usage: `just flash` or `just flash beekeeb/piantor_pro`
@@ -60,8 +62,8 @@ flash keyboard="all":
             echo "Flashing $kb..."
             echo "=========================================================="
             mkdir -p "$qmk_home/keyboards/$kb/keymaps"
-            ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/vial"
-            qmk flash -kb "$kb" -km vial
+            ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/{{keymap_name}}"
+            qmk flash -kb "$kb" -km {{keymap_name}}
         done
     else
         kb="{{keyboard}}"
@@ -73,8 +75,8 @@ flash keyboard="all":
         echo "Flashing $kb..."
         echo "=========================================================="
         mkdir -p "$qmk_home/keyboards/$kb/keymaps"
-        ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/vial"
-        qmk flash -kb "$kb" -km vial
+        ln -sfn "$PWD/$kb" "$qmk_home/keyboards/$kb/keymaps/{{keymap_name}}"
+        qmk flash -kb "$kb" -km {{keymap_name}}
     fi
 
 # Interactively choose a keyboard to compile or flash using fzf. Usage: `just choose` or `just choose flash`
@@ -102,30 +104,9 @@ clean:
     echo "Cleaning up symlinks in QMK_HOME..."
     keyboards=$(find . -name keymap.c | sed -E 's|^\./(.*)/keymap.c|\1|')
     for kb in $keyboards; do
-        symlink="$qmk_home/keyboards/$kb/keymaps/vial"
+        symlink="$qmk_home/keyboards/$kb/keymaps/{{keymap_name}}"
         if [ -L "$symlink" ]; then
             echo "Removing symlink: $symlink"
             rm "$symlink"
         fi
     done
-
-# Print Zsh autocompletion script. Load with: source <(just completions)
-completions:
-    @echo '# Zsh completion for just-keyboard-layout'
-    @echo '_just_layout_completions() {'
-    @echo '    local -a recipes'
-    @echo '    recipes=($(just --summary 2>/dev/null))'
-    @echo '    if (( CURRENT == 2 )); then'
-    @echo '        _describe -t recipes "recipes" recipes'
-    @echo '    elif (( CURRENT == 3 )); then'
-    @echo '        case $words[2] in'
-    @echo '            compile|flash)'
-    @echo '                local -a keyboards'
-    @echo '                keyboards=($(find . -name keymap.c 2>/dev/null \| sed -E "s\|^\./(.*)/keymap.c\|\1\|"))'
-    @echo '                keyboards+=("all")'
-    @echo '                _describe -t keyboards "keyboards" keyboards'
-    @echo '                ;;'
-    @echo '        esac'
-    @echo '    fi'
-    @echo '}'
-    @echo 'compdef _just_layout_completions just'
