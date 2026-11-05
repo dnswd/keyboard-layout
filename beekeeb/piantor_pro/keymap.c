@@ -86,9 +86,9 @@ void matrix_scan_user(void) {
     if (current_os != last_os) {
         last_os = current_os;
         if (current_os == OS_MACOS) {
-            keymap_config.swap_lctl_lgui = false;
-        } else { // linux + windows
             keymap_config.swap_lctl_lgui = true;
+        } else { // linux + windows
+            keymap_config.swap_lctl_lgui = false;
         }
     }
 }
